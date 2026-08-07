@@ -65,7 +65,7 @@ const udp = dgram.createSocket('udp4');
 // ---------------------------------------------------------------------------
 const app = express();
 app.use(express.json());
-const server = http.createServer(app);
+export const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
 const clients = new Set<WebSocket>();
 
@@ -96,36 +96,53 @@ function prepareModel(): void {
 // ---------------------------------------------------------------------------
 // Output routing (UDP / serial)
 // ---------------------------------------------------------------------------
-function applyOutputConfig(): void {
-  if (serial) {
-    try { serial.close(); } catch { /* ignore */ }
-    serial = null;
-  }
-  if (config.outputMode === 'serial' && config.serialPath) {
-    try {
-      serial = new SerialPort({ path: config.serialPath, baudRate: 115200 });
-      serial.on('error', (e) => status('error', `Serial error: ${e.message}`));
-      status('info', `Serial output open on ${config.serialPath}`);
-    } catch (e) {
-      status('error', `Could not open serial port: ${(e as Error).message}`);
-    }
+function openSerial(): void {
+  try {
+    serial = new SerialPort({ path: config.serialPath, baudRate: 115200 });
+    serial.on('error', (e) => status('error', `Serial error: ${e.message}`));
+    status('info', `Serial output open on ${config.serialPath}`);
+  } catch (e) {
+    status('error', `Could not open serial port: ${(e as Error).message}`);
   }
 }
 
+function applyOutputConfig(): void {
+  const needsSerial = config.outputMode === 'serial' && !!config.serialPath;
+
+  // Already correctly configured - avoid tearing down a healthy connection
+  // just because an unrelated field (e.g. threshold) changed.
+  if (needsSerial && serial?.isOpen && serial.path === config.serialPath) return;
+  if (!needsSerial && !serial) return;
+
+  if (serial) {
+    const old = serial;
+    serial = null;
+    if (old.isOpen) {
+      // Wait for the close to finish before reopening - opening the same
+      // COM port before Windows releases the previous handle throws
+      // "Access is denied".
+      old.close(() => { if (needsSerial) openSerial(); });
+      return;
+    }
+  }
+  if (needsSerial) openSerial();
+}
+
 function sendOutput(value: number): void {
-  const payload =
-    JSON.stringify({
-      metric: config.metric,
-      value: Math.round(value * 10000) / 10000,
-      focused: value > config.threshold,
-      timestamp: Date.now(),
-    }) + '\n';
+  const focused = value > config.threshold;
   if (config.outputMode === 'udp') {
+    const payload =
+      JSON.stringify({
+        metric: config.metric,
+        value: Math.round(value * 10000) / 10000,
+        focused,
+        timestamp: Date.now(),
+      }) + '\n';
     udp.send(payload, config.udpPort, '127.0.0.1', (err) => {
       if (err) status('error', `UDP send error: ${err.message}`);
     });
   } else if (config.outputMode === 'serial' && serial?.isOpen) {
-    serial.write(payload);
+    serial.write(focused ? '1\n' : '0\n');
   }
 }
 
@@ -314,9 +331,14 @@ server.listen(PORT, () => {
   console.log(`BrainFlow Focus Widget backend on http://localhost:${PORT}`);
 });
 
-process.on('SIGINT', () => {
+export async function shutdown(): Promise<void> {
   disconnectBoard();
   try { model?.release(); } catch { /* ignore */ }
   try { serial?.close(); } catch { /* ignore */ }
+  await new Promise<void>((resolve) => server.close(() => resolve()));
+}
+
+process.on('SIGINT', async () => {
+  await shutdown();
   process.exit(0);
 });
