@@ -1,27 +1,51 @@
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 
-const pngPath = path.resolve(__dirname, '..', 'assets', 'vitruvian man_whitebg.png');
-const icoPath = path.resolve(__dirname, 'icon.ico');
+const src = path.resolve(__dirname, '..', 'assets', 'vitruvian man_whitebg.png');
+const dest = path.resolve(__dirname, 'icon.ico');
 
-const png = fs.readFileSync(pngPath);
+const sizes = [16, 32, 48, 256];
 
-// ICO header: reserved(2) + type=1(2) + count=1(2)
-const header = Buffer.alloc(6);
-header.writeUInt16LE(0, 0);
-header.writeUInt16LE(1, 2);
-header.writeUInt16LE(1, 4);
+async function build() {
+  const pngs = await Promise.all(
+    sizes.map((s) =>
+      sharp(src)
+        .resize(s, s, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
+        .png()
+        .toBuffer()
+    )
+  );
 
-// Directory entry (16 bytes): width, height, colors, reserved, planes, bpp, size, offset
-const entry = Buffer.alloc(16);
-entry.writeUInt8(0, 0);          // width: 0 = 256
-entry.writeUInt8(0, 1);          // height: 0 = 256
-entry.writeUInt8(0, 2);          // color palette count
-entry.writeUInt8(0, 3);          // reserved
-entry.writeUInt16LE(1, 4);       // color planes
-entry.writeUInt16LE(32, 6);      // bits per pixel
-entry.writeUInt32LE(png.length, 8);   // image data size
-entry.writeUInt32LE(6 + 16, 12);      // offset to image data
+  const headerSize = 6;
+  const entrySize = 16;
+  let dataOffset = headerSize + entrySize * pngs.length;
 
-fs.writeFileSync(icoPath, Buffer.concat([header, entry, png]));
-console.log('Created', icoPath, '(' + png.length + ' bytes PNG embedded)');
+  // ICO header
+  const header = Buffer.alloc(headerSize);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(pngs.length, 4);
+
+  // Directory entries
+  const entries = [];
+  for (let i = 0; i < pngs.length; i++) {
+    const entry = Buffer.alloc(entrySize);
+    const s = sizes[i];
+    entry.writeUInt8(s < 256 ? s : 0, 0);
+    entry.writeUInt8(s < 256 ? s : 0, 1);
+    entry.writeUInt8(0, 2);
+    entry.writeUInt8(0, 3);
+    entry.writeUInt16LE(1, 4);
+    entry.writeUInt16LE(32, 6);
+    entry.writeUInt32LE(pngs[i].length, 8);
+    entry.writeUInt32LE(dataOffset, 12);
+    dataOffset += pngs[i].length;
+    entries.push(entry);
+  }
+
+  fs.writeFileSync(dest, Buffer.concat([header, ...entries, ...pngs]));
+  console.log('Created', dest, 'with sizes:', sizes.join(', '));
+}
+
+build().catch((e) => { console.error(e); process.exit(1); });
