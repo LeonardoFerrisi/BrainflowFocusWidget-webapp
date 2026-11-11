@@ -1,0 +1,33 @@
+[    1242ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-373CG7ZK.js?v=a164dbf4:21549
+[    1317ms] [WARNING] WebSocket connection to 'ws://localhost:5173/ws' failed: WebSocket is closed before the connection is established. @ http://localhost:5173/src/App.tsx:105
+[    1366ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/api/boards:1
+[    1369ms] SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input
+    at http://localhost:5173/src/App.tsx:59:40
+[    1368ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/api/serial:1
+[    1370ms] SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input
+    at http://localhost:5173/src/App.tsx:64:40
+[    1373ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5173/favicon.ico:1
+[    1382ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/api/serial:1
+[    1384ms] SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input
+    at http://localhost:5173/src/App.tsx:64:40
+[    1383ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/api/boards:1
+[    1384ms] SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input
+    at http://localhost:5173/src/App.tsx:59:40
+[    1386ms] [ERROR] WebSocket connection to 'ws://localhost:5173/ws' failed: Connection closed before receiving a handshake response @ http://localhost:5173/src/App.tsx:68
+[   26501ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-373CG7ZK.js?v=a164dbf4:21549
+[   26512ms] [WARNING] WebSocket connection to 'ws://localhost:5173/ws' failed: WebSocket is closed before the connection is established. @ http://localhost:5173/src/App.tsx:105
+[   26531ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/api/boards:1
+[   26531ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/api/serial:1
+[   26532ms] SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input
+    at http://localhost:5173/src/App.tsx:59:40
+[   26532ms] SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input
+    at http://localhost:5173/src/App.tsx:64:40
+[   26546ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/api/boards:1
+[   26548ms] SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input
+    at http://localhost:5173/src/App.tsx:59:40
+[   26548ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5173/api/serial:1
+[   26549ms] SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input
+    at http://localhost:5173/src/App.tsx:64:40
+[   26552ms] [ERROR] WebSocket connection to 'ws://localhost:5173/ws' failed: Connection closed before receiving a handshake response @ http://localhost:5173/src/App.tsx:68
+[ 1340098ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/chunk-373CG7ZK.js?v=a164dbf4:21549
+[ 1340107ms] [WARNING] WebSocket connection to 'ws://localhost:5173/ws' failed: WebSocket is closed before the connection is established. @ http://localhost:5173/src/App.tsx?t=1794433737809:105

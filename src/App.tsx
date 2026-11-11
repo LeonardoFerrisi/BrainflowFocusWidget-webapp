@@ -119,9 +119,9 @@ export default function App() {
   return (
     <>
       <div className="header-row">
-        <h1>BrainFlow Focus Widget</h1>
+        <h1>Leonardo Telepathy Software</h1>
         <button className="theme-toggle" onClick={() => setDark(d => !d)}>
-          {dark ? 'Light mode' : 'Dark mode'}
+          {dark ? 'Light' : 'Dark'}
         </button>
       </div>
 

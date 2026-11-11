@@ -30,8 +30,8 @@ export default function EegChart({
     ctx.clearRect(0, 0, W, H);
 
     const palette = dark
-      ? { sep: '#333', baseline: '#444', trace: '#5b9bd9', label: '#ccc', sub: '#888' }
-      : { sep: '#e0e0e0', baseline: '#ccc', trace: '#3068a6', label: '#555', sub: '#999' };
+      ? { sep: '#3A3A3A', baseline: '#444', trace: '#F5F5F5', label: '#A3A3A3', sub: '#666' }
+      : { sep: '#C7C7C7', baseline: '#C7C7C7', trace: '#0A0A0A', label: '#5A5A5A', sub: '#999' };
 
     const bandH = H / Math.max(1, data.length);
     data.forEach((row, i) => {
@@ -66,7 +66,7 @@ export default function EegChart({
       ctx.stroke();
 
       ctx.fillStyle = palette.label;
-      ctx.font = '11px Arial';
+      ctx.font = '11px Arial, Helvetica, sans-serif';
       ctx.fillText(names[i] ?? `Ch ${i}`, 8, cy + 4);
       ctx.fillStyle = palette.sub;
       ctx.fillText(`±${maxAbs.toFixed(0)}uV`, 8, cy + 16);

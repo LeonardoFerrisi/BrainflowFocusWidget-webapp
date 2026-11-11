@@ -32,8 +32,8 @@ export default function PredictionChart({
     ctx.clearRect(0, 0, W, H);
 
     const palette = dark
-      ? { grid: '#333', text: '#aaa', threshold: '#e07b7b', trace: '#5b9bd9' }
-      : { grid: '#e6e6e6', text: '#888', threshold: '#a63232', trace: '#3068a6' };
+      ? { grid: '#3A3A3A', text: '#A3A3A3', threshold: '#d98a8a', trace: '#F5F5F5' }
+      : { grid: '#C7C7C7', text: '#5A5A5A', threshold: '#8a2424', trace: '#0A0A0A' };
 
     const padL = 34;
     const padB = 18;
@@ -48,7 +48,7 @@ export default function PredictionChart({
     // gridlines + y labels
     ctx.strokeStyle = palette.grid;
     ctx.fillStyle = palette.text;
-    ctx.font = '10px Arial';
+    ctx.font = '10px Arial, Helvetica, sans-serif';
     for (let g = 0; g <= 4; g++) {
       const y = 8 + (plotH * g) / 4;
       ctx.beginPath();

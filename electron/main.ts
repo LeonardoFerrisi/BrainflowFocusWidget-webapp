@@ -53,7 +53,7 @@ async function start(): Promise<void> {
 app.whenReady().then(start).catch((err) => {
   // Most likely a native library failing to load (missing VC++ runtime, etc.).
   // Surface it instead of the window silently never appearing.
-  dialog.showErrorBox('BrainFlow Focus Widget failed to start', String(err?.stack || err));
+  dialog.showErrorBox('Leonardo Telepathy Software failed to start', String(err?.stack || err));
   app.quit();
 });
 

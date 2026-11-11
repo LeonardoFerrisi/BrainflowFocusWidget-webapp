@@ -14,6 +14,7 @@ import path from 'path';
 import fs from 'fs';
 import dgram from 'dgram';
 import { fileURLToPath } from 'url';
+import { Worker } from 'worker_threads';
 import { WebSocketServer, WebSocket } from 'ws';
 import {
   BoardShim,
@@ -150,7 +151,13 @@ function sendOutput(value: number): void {
 // ---------------------------------------------------------------------------
 // Board connect / disconnect
 // ---------------------------------------------------------------------------
+let connectWorker: Worker | null = null;
+
 function disconnectBoard(): void {
+  if (connectWorker) {
+    connectWorker.terminate();
+    connectWorker = null;
+  }
   if (board) {
     try { board.stopStream(); } catch { /* ignore */ }
     try { board.releaseSession(); } catch { /* ignore */ }
@@ -158,6 +165,10 @@ function disconnectBoard(): void {
     activeBoardId = null;
   }
 }
+
+// Resolve the worker script path for both dev (tsx) and production (bundled).
+const workerExt = __dirname.includes('dist-electron') ? '.cjs' : '.ts';
+const boardWorkerPath = path.join(__dirname, `board-worker${workerExt}`);
 
 async function connectBoard(msg: {
   boardId: number;
@@ -167,28 +178,50 @@ async function connectBoard(msg: {
   file?: string;
 }): Promise<void> {
   disconnectBoard();
-  try {
-    // JS binding: BoardShim takes a plain params object (camelCase keys)
-    const inputParams: Record<string, unknown> = { timeout: 15 };
-    if (msg.serialPort) inputParams.serialPort = msg.serialPort;
-    if (msg.macAddress) inputParams.macAddress = msg.macAddress;
-    if (msg.ipAddress) inputParams.ipAddress = msg.ipAddress;
-    if (msg.file) inputParams.file = msg.file;
 
-    activeBoardId = msg.boardId;
-    board = new BoardShim(msg.boardId, inputParams as any);
-    board.prepareSession();
-    board.startStream();
-    prepareModel();
+  const inputParams: Record<string, unknown> = { timeout: 15 };
+  if (msg.serialPort) inputParams.serialPort = msg.serialPort;
+  if (msg.macAddress) inputParams.macAddress = msg.macAddress;
+  if (msg.ipAddress) inputParams.ipAddress = msg.ipAddress;
+  if (msg.file) inputParams.file = msg.file;
 
-    const sr = BoardShim.getSamplingRate(msg.boardId);
-    const names = BoardShim.getEegNames(msg.boardId);
-    status('success', `Connected - ${names.length} EEG channels @ ${sr} Hz`);
-    broadcast({ type: 'boardInfo', samplingRate: sr, eegNames: names });
-  } catch (e) {
-    disconnectBoard();
-    status('error', `Connection failed: ${(e as Error).message}`);
-  }
+  activeBoardId = msg.boardId;
+  status('info', `Connecting to board ${msg.boardId}...`);
+
+  return new Promise<void>((resolve) => {
+    const worker = new Worker(boardWorkerPath, {
+      workerData: { boardId: msg.boardId, inputParams },
+    });
+    connectWorker = worker;
+
+    worker.on('message', (result: { ok: boolean; error?: string }) => {
+      connectWorker = null;
+      if (result.ok) {
+        // BrainFlow's C library keeps session state at the process level.
+        // The worker established the session; this BoardShim instance lets
+        // the main thread read data from it without blocking.
+        board = new BoardShim(msg.boardId, inputParams as any);
+        prepareModel();
+        const sr = BoardShim.getSamplingRate(msg.boardId);
+        const names = BoardShim.getEegNames(msg.boardId);
+        status('success', `Connected - ${names.length} EEG channels @ ${sr} Hz`);
+        broadcast({ type: 'boardInfo', samplingRate: sr, eegNames: names });
+      } else {
+        activeBoardId = null;
+        status('error', `Connection failed: ${result.error}`);
+      }
+      broadcast({ type: 'connected', connected: board !== null });
+      resolve();
+    });
+
+    worker.on('error', (err) => {
+      connectWorker = null;
+      activeBoardId = null;
+      status('error', `Connection failed: ${err.message}`);
+      broadcast({ type: 'connected', connected: false });
+      resolve();
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -280,9 +313,7 @@ wss.on('connection', (ws) => {
 
     switch (msg.type) {
       case 'connect':
-        status('info', 'Connecting...');
         await connectBoard(msg);
-        broadcast({ type: 'connected', connected: board !== null });
         break;
 
       case 'disconnect':
@@ -333,14 +364,22 @@ wss.on('connection', (ws) => {
   ].filter((d): d is string => !!d);
   const dist = distCandidates.find((d) => fs.existsSync(path.join(d, 'index.html')));
   if (dist) {
+    console.log(`[static] Serving frontend from ${dist}`);
     app.use(express.static(dist));
     app.get('*', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
+  } else {
+    console.warn('[static] No dist/ directory found. Candidates checked:', distCandidates);
   }
 }
 
 BoardShim.setLogLevel(LogLevels.LEVEL_WARN);
+server.on('error', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use. Is another instance running?`);
+  }
+});
 server.listen(PORT, () => {
-  console.log(`BrainFlow Focus Widget backend on http://localhost:${PORT}`);
+  console.log(`Leonardo Telepathy Software backend on http://localhost:${PORT}`);
 });
 
 export async function shutdown(): Promise<void> {

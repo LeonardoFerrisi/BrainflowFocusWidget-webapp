@@ -1,0 +1,45 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - heading "BrainFlow Focus Widget" [level=1] [ref=e4]
+    - button "Dark" [ref=e5] [cursor=pointer]
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - generic [ref=e8]: Board
+      - combobox [ref=e9]
+    - generic [ref=e10]:
+      - generic [ref=e11]: Serial port (Cyton/Ganglion - optional)
+      - textbox "COM3 / /dev/ttyUSB0" [ref=e12]
+    - generic [ref=e13]:
+      - generic [ref=e14]: MAC address (Muse - optional)
+      - textbox "00:55:DA:B..." [ref=e15]
+    - button "Connect" [ref=e18] [cursor=pointer]
+  - generic [ref=e19]: Not connected.
+  - paragraph [ref=e22]: EEG traces appear here once a board is streaming.
+  - generic [ref=e23]:
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - generic [ref=e26]: Metric
+        - combobox [ref=e27]:
+          - option "Concentration" [selected]
+          - option "Relaxation"
+      - generic [ref=e28]:
+        - generic [ref=e29]: Threshold
+        - combobox [ref=e30]:
+          - option "0.5"
+          - option "0.6"
+          - option "0.7"
+          - option "0.8" [selected]
+          - option "0.9"
+      - generic [ref=e31]:
+        - generic [ref=e32]: Inference window
+        - combobox [ref=e33]:
+          - option "5s"
+          - option "10s" [selected]
+      - generic [ref=e34]: "Current value: -"
+    - generic [ref=e35]: Waiting for data…
+  - generic [ref=e41]:
+    - generic [ref=e42]: Send prediction out via
+    - combobox [ref=e43]:
+      - option "None" [selected]
+      - option "UDP"
+      - option "Serial"

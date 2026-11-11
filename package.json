@@ -1,9 +1,9 @@
 {
-  "name": "brainflow-focus-widget",
+  "name": "leonardo-telepathy-software",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "OpenBCI GUI Focus widget clone for any BrainFlow board (TypeScript)",
+  "description": "Leonardo Telepathy Software - EEG focus/relaxation measurement for any BrainFlow board",
   "main": "dist-electron/main.cjs",
   "scripts": {
     "dev": "concurrently -k \"npm:dev:server\" \"npm:dev:client\"",
@@ -13,8 +13,9 @@
     "typecheck:server": "tsc -p server/tsconfig.json --noEmit",
     "start": "cross-env NODE_ENV=production tsx server/index.ts",
     "build:server": "esbuild server/index.ts --bundle --platform=node --format=esm --outfile=dist-electron/server/index.mjs --external:brainflow --external:koffi --external:serialport --external:express --external:ws",
+    "build:worker": "esbuild server/board-worker.ts --bundle --platform=node --format=cjs --outfile=dist-electron/server/board-worker.cjs --external:brainflow --external:koffi",
     "build:electron-main": "esbuild electron/main.ts --bundle --platform=node --format=cjs --outfile=dist-electron/main.cjs --external:electron",
-    "build:desktop": "npm run build && npm run build:server && npm run build:electron-main",
+    "build:desktop": "npm run build && npm run build:server && npm run build:worker && npm run build:electron-main",
     "electron:dev": "concurrently -k \"npm:dev:server\" \"npm:dev:client\" \"npm run build:electron-main && wait-on http://localhost:5173 && cross-env ELECTRON_START_URL=http://localhost:5173 electron dist-electron/main.cjs\"",
     "electron:build": "npm run build:desktop && electron-builder --win"
   },
