@@ -35,15 +35,36 @@ board buffer (10 s window)
 
 ```bash
 npm install
-npm run dev        # backend on :8080, frontend dev server on :5173
+npm run dev        # backend on :8081, frontend dev server on :5173
 ```
 
 Open http://localhost:5173. For a production build:
 
 ```bash
 npm run build
-npm start          # serves the built frontend from :8080
+npm start          # serves the built frontend from :8081
 ```
+
+## Desktop build (Windows installer)
+
+```bash
+npm run electron:build
+```
+
+Produces `release/BrainFlowFocusWidget-<version>-Setup.exe`. Run it once to
+install (choose the location, desktop / start-menu shortcuts are created); after
+that the app launches in a couple of seconds.
+
+- The installer is unsigned, so Windows SmartScreen shows a warning - choose
+  **More info -> Run anyway**.
+- The Visual C++ runtime DLLs BrainFlow needs are bundled next to its native
+  libraries by the build, so no separate redistributable install is required.
+  If a board still fails to connect with a library-load error, install the
+  [VC++ Redistributable x64](https://aka.ms/vs/17/release/vc_redist.x64.exe).
+- Muse over BLE needs Windows 10 build 19041+ with the headset paired in
+  Windows Bluetooth settings first (see Notes below).
+- The backend listens on `127.0.0.1:8081`; if that port is already in use the
+  app shows a "Server failed to start" dialog and exits.
 
 ## Usage
 

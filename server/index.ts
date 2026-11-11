@@ -11,6 +11,7 @@
 import express from 'express';
 import http from 'http';
 import path from 'path';
+import fs from 'fs';
 import dgram from 'dgram';
 import { fileURLToPath } from 'url';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -26,7 +27,7 @@ import {
 import { SerialPort } from 'serialport';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PORT = 8080;
+const PORT = 8081;
 
 // Focus widget constants (from W_Focus.pde / FocusEnums.pde)
 const PREDICT_MS = 250;         // prediction update rate
@@ -320,10 +321,21 @@ wss.on('connection', (ws) => {
 // ---------------------------------------------------------------------------
 // Static frontend (production build)
 // ---------------------------------------------------------------------------
-if (process.env.NODE_ENV === 'production') {
-  const dist = path.join(__dirname, '..', 'dist');
-  app.use(express.static(dist));
-  app.get('*', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
+// `npm start` runs this file from `server/`, one level below the project root.
+// The Electron build bundles it into `dist-electron/server/`, two levels below
+// the app root, and passes FOCUS_DIST explicitly. Serve whenever a build is
+// found - dev (`npm run dev`) has no `dist/` so this is simply skipped.
+{
+  const distCandidates = [
+    process.env.FOCUS_DIST,
+    path.join(__dirname, '..', 'dist'),
+    path.join(__dirname, '..', '..', 'dist'),
+  ].filter((d): d is string => !!d);
+  const dist = distCandidates.find((d) => fs.existsSync(path.join(d, 'index.html')));
+  if (dist) {
+    app.use(express.static(dist));
+    app.get('*', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
+  }
 }
 
 BoardShim.setLogLevel(LogLevels.LEVEL_WARN);

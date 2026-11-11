@@ -1,6 +1,10 @@
 appId: com.brainflow.focuswidget
 productName: BrainFlow Focus Widget
+# BrainFlow builds its DLL paths as raw __dirname strings and hands them to the
+# OS loader via koffi, which cannot read out of an app.asar archive - keep the
+# app tree unpacked.
 asar: false
+afterPack: build/afterPack.cjs
 directories:
   output: release
   buildResources: build
@@ -22,3 +26,4 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
+  artifactName: BrainFlowFocusWidget-${version}-Setup.exe
